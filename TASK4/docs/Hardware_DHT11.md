@@ -1,4 +1,4 @@
-## Hardware used
+## Hardware Used
 
 Working in the Project:
 
