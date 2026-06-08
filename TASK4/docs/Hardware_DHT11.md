@@ -1,4 +1,4 @@
-## Hardware DHT11
+## Hardware used
 
 Working in the Project:
 
