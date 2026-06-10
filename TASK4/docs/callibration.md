@@ -4,8 +4,8 @@
 
 | Sensor | Calibration Parameter | Value | Method |
 |----------|----------|----------|----------|
-| LDR | DARK_THRESHOLD | 300 ADC | Determined from dark condition readings |
-| LDR | BRIGHT_THRESHOLD | 700 ADC | Defined bright-light threshold |
+| LDR | DARK_THRESHOLD | 175 ADC | Determined from dark condition readings |
+| LDR | BRIGHT_THRESHOLD | 900 ADC | Defined bright-light threshold |
 | DHT22 | Read Interval | 2000 ms | Required by DHT22 specifications |
 | Ultrasonic HC-SR04 | Timeout | 30000 µs | Returns -1 when no echo is received |
 | Soil Moisture | DRY_ADC | 820 ADC | Firmware calibration constant |
@@ -19,10 +19,10 @@
 
 | Condition | Raw ADC Reading |
 |------------|----------------|
-| Dark | 219 |
+| Dark | 175 |
 | Dark | 273 |
 | Dark | 299 |
-| Ambient | 399 |
+| Ambient | 400 |
 | Ambient | 409 |
 | Ambient | 411 |
 | Ambient | 426 |
