@@ -1,130 +1,48 @@
-const int ENA = 9;
-const int IN1 = 10;
-const int IN2 = 11;
-const int RELAY_PIN = 6;
-const int LED_PIN = 13;
-const int ESTOP_PIN = 2;
+#include <DHT.h>
 
-volatile bool emergencyStop = false;
+#define DHT_PIN 4
+#define DHT_TYPE DHT22
 
-unsigned long previousMillis = 0;
-bool ledState = LOW;
-int currentPWM = 0;
-bool messagePrinted = false;
+#define SOIL_PIN A0
+#define LDR_PIN A1
 
-// Interrupt Service Routine
-void emergencyISR() {
-  emergencyStop = true;
-}
+DHT dht(DHT_PIN, DHT_TYPE);
 
 void setup() {
   Serial.begin(9600);
+  dht.begin();
 
-  pinMode(ENA, OUTPUT);
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-  pinMode(RELAY_PIN, OUTPUT);
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(ESTOP_PIN, INPUT_PULLUP);
-
-  // Set motor direction
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-
-  // Valve initially closed
-  digitalWrite(RELAY_PIN, LOW);
-
-  attachInterrupt(digitalPinToInterrupt(ESTOP_PIN), emergencyISR, FALLING);
-
-  Serial.println("System Ready");
-  Serial.println("Commands:");
-  Serial.println("1-9 : Motor speed");
-  Serial.println("0   : Motor OFF");
-  Serial.println("o   : Valve OPEN");
-  Serial.println("f   : Valve CLOSE");
-  Serial.println("r   : Reset after Emergency Stop");
+  // Print CSV header once
+  Serial.println("timestamp,temp,humidity,soil,light");
 }
 
 void loop() {
 
-  // Handle Emergency Stop
-  if (emergencyStop) {
+  // Read DHT11
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
 
-    analogWrite(ENA, 0);          // Stop motor
-    currentPWM = 0;
-    digitalWrite(RELAY_PIN, LOW); // Close valve
-    digitalWrite(LED_PIN, LOW);   // Turn off LED
+  // Read soil moisture sensor
+  int soilValue = analogRead(SOIL_PIN);
 
-    if (!messagePrinted) {
-      Serial.println("EMERGENCY STOP ACTIVATED");
-      Serial.println("Send 'r' to reset system");
-      messagePrinted = true;
-    }
+  // Read LDR
+  int lightValue = analogRead(LDR_PIN);
 
-    if (Serial.available()) {
-      char cmd = Serial.read();
+  // Print values in CSV format
+  Serial.print(millis());
+  Serial.print(",");
 
-      if (cmd == 'r') {
-        emergencyStop = false;
-        messagePrinted = false;
-        Serial.println("SYSTEM RESET");
-      }
-    }
+  Serial.print(temperature);
+  Serial.print(",");
 
-    return;   // Skip rest of loop while in emergency state
-  }
+  Serial.print(humidity);
+  Serial.print(",");
 
-  // Blink LED while motor is running
-  if (currentPWM > 0) {
-    unsigned long currentMillis = millis();
+  Serial.print(soilValue);
+  Serial.print(",");
 
-    if (currentMillis - previousMillis >= 500) {
-      previousMillis = currentMillis;
-      ledState = !ledState;
-      digitalWrite(LED_PIN, ledState);
-    }
-  }
-  else {
-    digitalWrite(LED_PIN, LOW);
-  }
+  Serial.println(lightValue);
 
-  // Read Serial Commands
-  if (Serial.available()) {
-
-    char cmd = Serial.read();
-
-    // Motor Speed Control
-    if (cmd >= '1' && cmd <= '9') {
-
-      currentPWM = map(cmd - '0', 1, 9, 80, 255);
-      analogWrite(ENA, currentPWM);
-
-      Serial.print("Motor PWM = ");
-      Serial.println(currentPWM);
-    }
-
-    // Motor OFF
-    else if (cmd == '0') {
-
-      currentPWM = 0;
-      analogWrite(ENA, 0);
-      digitalWrite(LED_PIN, LOW);
-
-      Serial.println("Motor OFF");
-    }
-
-    // Valve ON
-    else if (cmd == 'o') {
-
-      digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("Valve OPEN");
-    }
-
-    // Valve OFF
-    else if (cmd == 'f') {
-
-      digitalWrite(RELAY_PIN, LOW);
-      Serial.println("Valve CLOSED");
-    }
-  }
+  // Take readings every 2 seconds
+  delay(20000);
 }
