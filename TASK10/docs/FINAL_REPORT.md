@@ -2,7 +2,7 @@
 
 ## **Student Information**
 
-**Name:** Mridula A Chandran
+**Name:** Kavyadas K J
 
 **College:** Sree Chitra Thirunal College of Engineering
 
